@@ -10,7 +10,7 @@ def items_fetching_recursive(item_id, take_first):
         print(item_url)
         item_soup = BeautifulSoup(requests.get(item_url).content, 'lxml')
         sources = list(map(lambda x: x['href'], item_soup.find(id='sources').find_all('a')))
-        sources[0] = sources[0][56:]
+        sources[0] = sources[0][56:] #skipping google image search to get link to source
         print('\t' + str(sources))
         items_fetching_recursive(item_id - 1, take_first - 1)
 
