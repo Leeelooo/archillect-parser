@@ -4,19 +4,31 @@ import requests
 URL = 'http://archillect.com'
 
 
-def items_fetching_recursive(item_id, take_first):
+def get_item_sources(item_url):
+    item_soup = BeautifulSoup(requests.get(item_url).content, 'lxml')
+    return list(map(lambda x: x['href'], item_soup.find(id='sources').find_all('a')))
+
+
+# TODO: smth
+# how it should works but it isn't
+# item_tags_soup = BeautifulSoup(requests.get(search_url).content, 'lxml')
+# return item_tags_soup.find('input', 'gLFyf gsfi').value
+def get_tem_tags(search_url):
+    return search_url
+
+
+def fetch_items_recursive(item_id, take_first):
     if take_first > 0 and item_id > 0:
         item_url = URL + '/' + str(item_id)
         print(item_url)
-        item_soup = BeautifulSoup(requests.get(item_url).content, 'lxml')
-        sources = list(map(lambda x: x['href'], item_soup.find(id='sources').find_all('a')))
-        # item_tags_soup = BeautifulSoup(requests.get(sources[0]).content, 'lxml') somehow get tags created by google search
-        sources[0] = sources[0][56:]  # skipping google image search to get link to source
-        print('└───' + str(sources))
-        # print(item_tags_soup.prettify())
-        items_fetching_recursive(item_id - 1, take_first - 1)
+        sources = get_item_sources(item_url)
+        tags = get_tem_tags(sources[0])
+        sources[0] = sources[0][56:]
+        print('├───' + str(sources))
+        print('└─── ' + str(tags))
+        fetch_items_recursive(item_id - 1, take_first - 1)
 
 
 soup = BeautifulSoup(requests.get(URL).content, 'lxml')
 last_id = int(soup.find('div', 'overlay').string.strip())
-items_fetching_recursive(int(last_id), 10)
+fetch_items_recursive(int(last_id), 10)
