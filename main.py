@@ -17,6 +17,7 @@ def get_tem_tags(search_url):
     return search_url
 
 
+# TODO: do not print anything, just return a dict, NON RECURSIVE
 def fetch_items_recursive(item_id, take_first):
     if take_first > 0 and item_id > 0:
         item_url = URL + '/' + str(item_id)
@@ -29,6 +30,7 @@ def fetch_items_recursive(item_id, take_first):
         fetch_items_recursive(item_id - 1, take_first - 1)
 
 
-soup = BeautifulSoup(requests.get(URL).content, 'lxml')
-last_id = int(soup.find('div', 'overlay').string.strip())
-fetch_items_recursive(int(last_id), 10)
+if __name__ == '__main__':
+    soup = BeautifulSoup(requests.get(URL).content, 'lxml')
+    last_id = int(soup.find('div', 'overlay').string.strip())
+    fetch_items_recursive(int(last_id), 10)
