@@ -18,19 +18,26 @@ def get_tem_tags(search_url):
 
 
 # TODO: do not print anything, just return a dict, NON RECURSIVE
-def fetch_items_recursive(item_id, take_first):
-    if take_first > 0 and item_id > 0:
-        item_url = URL + '/' + str(item_id)
-        print(item_url)
+# done
+def fetch_items(item_id, items_count):
+    items_dict = {}
+
+    for item_number in range(item_id, max(item_id-items_count, 1), -1):
+        item_url = URL + '/' + str(item_number)
         sources = get_item_sources(item_url)
         tags = get_tem_tags(sources[0])
         sources[0] = sources[0][56:]
-        print('├───' + str(sources))
-        print('└─── ' + str(tags))
-        fetch_items_recursive(item_id - 1, take_first - 1)
+        items_dict[item_url] = [sources, tags]
+
+    return items_dict
 
 
 if __name__ == '__main__':
     soup = BeautifulSoup(requests.get(URL).content, 'lxml')
     last_id = int(soup.find('div', 'overlay').string.strip())
-    fetch_items_recursive(int(last_id), 10)
+    items = fetch_items(int(last_id), 10)
+
+    for url in items:
+        print(url)
+        print('├───' + str(items[url][0]))
+        print('└─── ' + str(items[url][1]))
