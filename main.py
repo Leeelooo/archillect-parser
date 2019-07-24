@@ -1,5 +1,7 @@
 from bs4 import BeautifulSoup
 import requests
+import json
+import db_utils
 
 URL = 'http://archillect.com'
 
@@ -9,35 +11,24 @@ def get_item_sources(item_url):
     return list(map(lambda x: x['href'], item_soup.find(id='sources').find_all('a')))
 
 
-# TODO: smth
-# how it should works but it isn't
-# item_tags_soup = BeautifulSoup(requests.get(search_url).content, 'lxml')
-# return item_tags_soup.find('input', 'gLFyf gsfi').value
-def get_tem_tags(search_url):
-    return search_url
+def fetch_items(item_id, items_count=10):
+    items_list = []
 
-
-# TODO: do not print anything, just return a dict, NON RECURSIVE
-# done
-def fetch_items(item_id, items_count):
-    items_dict = {}
-
-    for item_number in range(item_id, max(item_id-items_count, 1), -1):
+    for item_number in range(item_id, max(item_id - items_count, 1), -1):
         item_url = URL + '/' + str(item_number)
         sources = get_item_sources(item_url)
-        tags = get_tem_tags(sources[0])
         sources[0] = sources[0][56:]
-        items_dict[item_url] = [sources, tags]
+        items_list.append((item_number, json.dumps(sources)))
 
-    return items_dict
+    return items_list
 
 
 if __name__ == '__main__':
     soup = BeautifulSoup(requests.get(URL).content, 'lxml')
     last_id = int(soup.find('div', 'overlay').string.strip())
-    items = fetch_items(int(last_id), 10)
+    db_utils.insert_new_items(fetch_items(int(last_id)))
 
+    items = db_utils.get_cached_items()
     for url in items:
-        print(url)
-        print('├───' + str(items[url][0]))
-        print('└─── ' + str(items[url][1]))
+        print(id)
+        print('└───' + str(items[url]))
