@@ -26,9 +26,11 @@ def fetch_items(item_id, items_count=10):
 if __name__ == '__main__':
     soup = BeautifulSoup(requests.get(URL).content, 'lxml')
     last_id = int(soup.find('div', 'overlay').string.strip())
-    db_utils.insert_new_items(fetch_items(int(last_id)))
 
-    items = db_utils.get_cached_items()
-    for url in items:
-        print(id)
-        print('└───' + str(items[url]))
+    db_utils.connect_database('archillect_images.db')
+    db_utils.create_table('sources')
+    db_utils.insert_many('sources', fetch_items(int(last_id), 10))
+
+    items = db_utils.get_items('sources', tuple(range(last_id, last_id-10, -1)))
+    for item_id, item_sources in items:
+        print(item_id, ': ', item_sources, sep='')
