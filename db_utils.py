@@ -1,11 +1,43 @@
+"""
+Sqlite3 database singleton helper
+
+Example:
+
+>>> import db_utils
+>>> db.utils.connect_database(':memory:')
+>>> db_utils.create_table('posts')
+"""
+
 import sqlite3
+from typing import List
 
 CONNECTION = None
 CURSOR = None
 
 
-# If DB doesn't exist, it will be created
-def connect_database(path):
+def check_cursor(cursor: sqlite3.Cursor):
+    if not cursor:
+        raise ConnectionError('Сonnection to the database is not established')
+
+    return True
+
+
+def make_value_string(length: int):
+    """Make string like '(?,?)' for use in sql queries"""
+    return '(' + ','.join(['?']*length) + ')'
+
+
+# TODO: check if all dangerous characters are escaped
+def escape_string(string):
+    """Escape string to prevent injection"""
+    return string.replace('"', '""').replace("'", "''")
+
+
+def connect_database(path: str):
+    """
+    Create database connection
+    If file does not exists it will be created
+    """
     global CONNECTION, CURSOR
     CONNECTION = sqlite3.connect(path)
     CURSOR = CONNECTION.cursor()
@@ -19,7 +51,7 @@ def check_table_existence(table_name):
         FROM sqlite_master  
         WHERE type = 'table' 
         AND name = '{}' 
-    '''.format(table_name))
+    '''.format(escape_string(table_name)))
     return CURSOR.fetchone()[0] == 1
 
 
@@ -29,7 +61,7 @@ def create_table(table_name):
     CURSOR.execute('''
         create table if not exists {}
         (id integer primary key, sources text not null)
-    '''.format(table_name))
+    '''.format(escape_string(table_name)))
 
 
 def delete_table(table_name):
@@ -37,7 +69,7 @@ def delete_table(table_name):
         raise ConnectionError('Сonnection to the database is not established')
     CURSOR.execute('''
         drop table if exists {}
-    '''.format(table_name))
+    '''.format(escape_string(table_name)))
 
 
 def insert(table_name, item_tuple):
@@ -45,7 +77,7 @@ def insert(table_name, item_tuple):
         create_table(table_name)
     CURSOR.execute('''
         insert into {} values (?, ?)
-    '''.format(table_name), item_tuple)
+    '''.format(escape_string(table_name)), item_tuple)
     CONNECTION.commit()
 
 
@@ -54,7 +86,7 @@ def insert_many(table_name, items_list):
         create_table(table_name)
     CURSOR.executemany('''
         insert into {} values (?, ?)
-    '''.format(table_name), items_list)
+    '''.format(escape_string(table_name)), items_list)
     CONNECTION.commit()
 
 
@@ -63,7 +95,7 @@ def delete(table_name, item_id):
         return
     CURSOR.execute('''
         delete from {} where id = ?
-    '''.format(table_name), (item_id,))
+    '''.format(escape_string(table_name)), (item_id,))
     CONNECTION.commit()
 
 
@@ -72,7 +104,7 @@ def delete_many(table_name, item_id_list):
         return
     CURSOR.executemany('''
         delete from {} where id = ?
-    '''.format(table_name), list(map(lambda x: (x,), item_id_list)))
+    '''.format(escape_string(table_name)), list(map(lambda x: (x,), item_id_list)))
     CONNECTION.commit()
 
 
@@ -83,7 +115,7 @@ def update(table_name, item_id, new_sources):
         update {}
         set sources = ?
         where id = ?
-    '''.format(table_name), (new_sources, item_id))
+    '''.format(escape_string(table_name)), (new_sources, item_id))
     CONNECTION.commit()
 
 
@@ -94,7 +126,7 @@ def update_many(table_name, item_id_list, new_sources_list):
         update {}
         set sources = ?
         where id = ?
-    '''.format(table_name), list(map(lambda x, y: (x, y), new_sources_list, item_id_list)))
+    '''.format(escape_string(table_name)), list(map(lambda x, y: (x, y), new_sources_list, item_id_list)))
     CONNECTION.commit()
 
 
@@ -103,7 +135,7 @@ def get_item(table_name, item_id):
         return None
     CURSOR.execute('''
         select * from {} where id = ?
-    '''.format(table_name), (item_id,))
+    '''.format(escape_string(table_name)), (item_id,))
     return CURSOR.fetchone()
 
 
