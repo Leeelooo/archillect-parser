@@ -43,9 +43,8 @@ def connect_database(path: str):
     CURSOR = CONNECTION.cursor()
 
 
-def check_table_existence(table_name):
-    if CURSOR is None:
-        raise ConnectionError('Сonnection to the database is not established')
+def check_table_existence(table_name: str):
+    check_cursor(CURSOR)
     CURSOR.execute('''
         SELECT count(name) 
         FROM sqlite_master  
@@ -55,24 +54,22 @@ def check_table_existence(table_name):
     return CURSOR.fetchone()[0] == 1
 
 
-def create_table(table_name):
-    if CURSOR is None:
-        raise ConnectionError('Сonnection to the database is not established')
+def create_table(table_name: str):
+    check_cursor(CURSOR)
     CURSOR.execute('''
         create table if not exists {}
         (id integer primary key, sources text not null)
     '''.format(escape_string(table_name)))
 
 
-def delete_table(table_name):
-    if CURSOR is None:
-        raise ConnectionError('Сonnection to the database is not established')
+def delete_table(table_name: str):
+    check_cursor(CURSOR)
     CURSOR.execute('''
         drop table if exists {}
     '''.format(escape_string(table_name)))
 
 
-def insert(table_name, item_tuple):
+def insert(table_name: str, item_tuple: tuple):
     if not check_table_existence(table_name):
         create_table(table_name)
     CURSOR.execute('''
@@ -81,7 +78,7 @@ def insert(table_name, item_tuple):
     CONNECTION.commit()
 
 
-def insert_many(table_name, items_list):
+def insert_many(table_name: str, items_list: List[tuple]):
     if not check_table_existence(table_name):
         create_table(table_name)
     CURSOR.executemany('''
@@ -90,7 +87,7 @@ def insert_many(table_name, items_list):
     CONNECTION.commit()
 
 
-def delete(table_name, item_id):
+def delete(table_name: str, item_id: int):
     if not check_table_existence(table_name):
         return
     CURSOR.execute('''
@@ -99,7 +96,7 @@ def delete(table_name, item_id):
     CONNECTION.commit()
 
 
-def delete_many(table_name, item_id_list):
+def delete_many(table_name: str, item_id_list: List[int]):
     if not check_table_existence(table_name):
         return
     CURSOR.executemany('''
@@ -130,7 +127,7 @@ def update_many(table_name, item_id_list, new_sources_list):
     CONNECTION.commit()
 
 
-def get_item(table_name, item_id):
+def get_item(table_name: str, item_id: int):
     if not check_table_existence(table_name):
         return None
     CURSOR.execute('''
@@ -139,7 +136,7 @@ def get_item(table_name, item_id):
     return CURSOR.fetchone()
 
 
-def get_items(table_name, item_id_list):
+def get_items(table_name: str, item_id_list: List[int]):
     if not check_table_existence(table_name):
         return None
     CURSOR.execute('''
