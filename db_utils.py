@@ -15,10 +15,10 @@ def check_table_existence(table_name):
     if CURSOR is None:
         raise ConnectionError('Сonnection to the database is not established')
     CURSOR.execute('''
-        SELECT count(name) 
-        FROM sqlite_master  
-        WHERE type = 'table' 
-        AND name = '{}' 
+        SELECT count(name)
+        FROM sqlite_master
+        WHERE type = 'table'
+        AND name = '{}'
     '''.format(table_name))
     return CURSOR.fetchone()[0] == 1
 
@@ -44,7 +44,7 @@ def insert(table_name, item_tuple):
     if not check_table_existence(table_name):
         create_table(table_name)
     CURSOR.execute('''
-        insert into {} values (?, ?)
+        insert or ignore into {} values (?, ?)
     '''.format(table_name), item_tuple)
     CONNECTION.commit()
 
@@ -53,7 +53,7 @@ def insert_many(table_name, items_list):
     if not check_table_existence(table_name):
         create_table(table_name)
     CURSOR.executemany('''
-        insert into {} values (?, ?)
+        insert or ignore into {} values (?, ?)
     '''.format(table_name), items_list)
     CONNECTION.commit()
 
