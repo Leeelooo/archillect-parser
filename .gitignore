@@ -1,2 +1,3 @@
 __pycahche__
-archillect_parser.db
+api/archillect_parser.db
+api/__pycache__
