@@ -1,7 +1,5 @@
 from bs4 import BeautifulSoup
-from utils import get_arg_value
 import requests
-import sys
 
 URL = 'http://archillect.com'
 
@@ -30,13 +28,13 @@ def get_last_items(items_count=10):
     return fetch_items(last_id, items_count)
 
 
-def main():
-    items_to_parse = get_arg_value(sys.argv[1:], 'items')
-    items = get_last_items(int(items_to_parse) if items_to_parse.isdigit() else 10)
-    for item in items:
-        print(item[0])
-        print('└───' + str(item[1]))
+# def main():
+#     items_to_parse = get_arg_value(sys.argv[1:], 'items')
+#     items = get_last_items(int(items_to_parse) if items_to_parse.isdigit() else 10)
+#     for item in items:
+#         print(item[0])
+#         print('└───' + str(item[1]))
 
 
-if __name__ == '__main__':
-    main()
+# if __name__ == '__main__':
+#     main()
