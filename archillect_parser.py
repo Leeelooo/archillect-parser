@@ -1,7 +1,10 @@
 from bs4 import BeautifulSoup
 from item_model import ArchillectItem
-from db import session
+from requests import put
 import requests
+import sys
+import json
+from utils import get_arg_value
 
 URL = 'http://archillect.com'
 
@@ -18,7 +21,7 @@ def fetch_items(item_id, items_count):
         item_url = URL + '/' + str(item_number)
         sources = get_item_sources(item_url)
         sources[0] = sources[0][56:]
-        items_list.append(ArchillectItem(item_number, sources))
+        items_list.append((item_number, sources))
 
     return items_list
 
@@ -29,10 +32,13 @@ def get_last_items(items_count=10):
     return fetch_items(last_id, items_count)
 
 
-if __name__ == '__main__':
-    # TODO: implement inserting properly?
-    items = get_last_items()
-    session.add_all(items)
-    session.commit()
+def main():
+    items_to_parse = get_arg_value(sys.argv[1:], 'items')
+    items = get_last_items(int(items_to_parse) if items_to_parse.isdigit() else 10)
     for item in items:
-        print(str(item.item_id) + ' ' + item.sources)
+        response = put('http://localhost:5000/items/', data={'item_id': item[0], 'sources': json.dumps(item[1])})
+        print(response.json())
+
+
+if __name__ == '__main__':
+    main()

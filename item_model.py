@@ -10,7 +10,7 @@ Base = declarative_base()
 class ArchillectItem(Base):
     __tablename__ = 'archillect_items'
 
-    item_id = Column(Integer, primary_key=True, sqlite_on_conflict_unique='UPDATE')
+    item_id = Column(Integer, primary_key=True, sqlite_on_conflict_primary_key='REPLACE')
     sources = Column(String)
 
     def __init__(self, item_id, sources_array):
