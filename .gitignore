@@ -1,2 +1,3 @@
-__pycahche__
-archillect_images.db
+__pycache__
+api/archillect_parser.db
+*.egg-info

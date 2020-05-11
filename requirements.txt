@@ -1,3 +1,7 @@
 requests[socks]
 beautifulsoup4
 lxml
+flask
+flask-restful
+sqlalchemy
+flask_sqlalchemy
